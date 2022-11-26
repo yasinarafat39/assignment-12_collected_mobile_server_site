@@ -19,6 +19,8 @@ async function run() {
     try {
         const categoriesCollection = client.db('CollectedMobile').collection('categories');
         const productsCollection = client.db('CollectedMobile').collection('products');
+        const usersCollection = client.db('CollectedMobile').collection('users');
+
 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -32,6 +34,15 @@ async function run() {
             const categoryProduct = await productsCollection.find(query).toArray();
             res.send(categoryProduct);
         })
+
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+
+
     }
     finally {
 
