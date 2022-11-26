@@ -11,16 +11,20 @@ app.use(express.json());
 
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.PASSWORD}@cluster0.g8htdaf.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.g8htdaf.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
 async function run() {
     try {
-        const categoriesCollection = client.db('collectedMobile').collection('categories');
-        const productsCollection = client.db('collectedMobile').collection('products');
+        const categoriesCollection = client.db('CollectedMobile').collection('categories');
+        const productsCollection = client.db('CollectedMobile').collection('products');
 
-        
+        app.get('/categories', async (req, res) => {
+            const query = {};
+            const categories = await categoriesCollection.find(query).toArray();
+            res.send(categories);
+        })
     }
     finally {
 
