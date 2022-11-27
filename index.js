@@ -20,7 +20,7 @@ async function run() {
         const categoriesCollection = client.db('CollectedMobile').collection('categories');
         const productsCollection = client.db('CollectedMobile').collection('products');
         const usersCollection = client.db('CollectedMobile').collection('users');
-
+        const bookingCollection = client.db('CollectedMobile').collection('booking')
 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -35,12 +35,13 @@ async function run() {
             res.send(categoryProduct);
         })
 
-        app.post('/user', async (req, res) => {
+        app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(result);
         })
 
+        
 
 
     }
