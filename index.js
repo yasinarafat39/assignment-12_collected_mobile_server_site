@@ -35,6 +35,11 @@ async function run() {
             res.send(categoryProduct);
         })
 
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
