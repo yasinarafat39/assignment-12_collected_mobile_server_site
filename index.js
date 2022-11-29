@@ -89,6 +89,13 @@ async function run() {
             res.send(bookings);
         })
 
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.roll === 'Admin' });
+        })
+
         app.get('/products', async (req, res) => {
             const email = req.query.email;
 
@@ -97,7 +104,7 @@ async function run() {
             res.send(products);
         })
 
-        app.delete('/product/:id', async (req, res) => {
+        app.delete('/product/:id', async (req, res) => { 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await productsCollection.deleteOne(query);
