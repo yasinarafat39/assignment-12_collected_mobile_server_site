@@ -104,6 +104,14 @@ async function run() {
             res.send(result);
         })
 
+        app.delete('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await bookingCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         app.post('/advertise', async (req, res) => {
             const advertiseItem = req.body;
             const result = await advertiseCollection.insertOne(advertiseItem);
@@ -119,6 +127,30 @@ async function run() {
         app.get('/users', async (req, res) => {
             const query = {};
             const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
+        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
+
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+            if (user?.roll !== 'Admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    roll: "Admin"
+                }
+            }
+
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
             res.send(result);
         })
 
