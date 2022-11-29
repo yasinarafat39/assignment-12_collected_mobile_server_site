@@ -16,6 +16,24 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('unauthorized access')
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(401).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
+
 async function run() {
     try {
         const categoriesCollection = client.db('CollectedMobile').collection('categories');
@@ -44,17 +62,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/jwt', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email };
-            const user = await usersCollection.findOne(query);
-            if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
-                return res.send({ AccessToken: token })
-            }
-            console.log(user);
-            res.status(403).send({ AccessToken: '' })
-        })
+
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -68,8 +76,14 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/bookings', async (req, res) => {
+        app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
             const query = { userEmail: email };
             const bookings = await bookingCollection.find(query).toArray();
             res.send(bookings);
@@ -77,6 +91,7 @@ async function run() {
 
         app.get('/products', async (req, res) => {
             const email = req.query.email;
+
             const query = { email: email }
             const products = await productsCollection.find(query).toArray();
             res.send(products);
@@ -99,6 +114,18 @@ async function run() {
             const query = {};
             const result = await advertiseCollection.find(query).toArray();
             res.send(result);
+        })
+
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
+                return res.send({ accessToken: token })
+            }
+            console.log(user);
+            res.status(403).send({ accessToken: '' })
         })
 
     }
