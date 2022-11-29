@@ -93,12 +93,12 @@ async function run() {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.roll === 'Admin' });
+            res.send({ isAdmin: user?.role === 'Admin' });
         })
 
-        app.get('/users/:roll', async (req, res) => {
-            const roll = req.params.roll;
-            const query = { roll: roll };
+        app.get('/users/:role', async (req, res) => {
+            const role = req.params.role;
+            const query = { role: role };
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         })
@@ -151,23 +151,51 @@ async function run() {
             const decodedEmail = req.decoded.email;
             const query = { email: decodedEmail };
             const user = await usersCollection.findOne(query);
-            if (user?.roll !== 'Admin') {
+            if (user?.role !== 'Admin') {
                 return res.status(403).send({ message: 'forbidden access' })
             }
 
             const id = req.params.id;
-            console.log(id);
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
-                    roll: "Admin"
+                    role: "Admin"
                 }
             }
 
             const result = await usersCollection.updateOne(filter, updateDoc, options);
             res.send(result);
         })
+
+
+
+
+        app.put('/users/verify/:id', verifyJWT, async (req, res) => {
+
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+            if (user?.role !== 'Admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    status: "Verified"
+                }
+            }
+
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+
+
+
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
