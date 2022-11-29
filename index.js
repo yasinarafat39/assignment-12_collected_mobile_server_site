@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -20,7 +21,9 @@ async function run() {
         const categoriesCollection = client.db('CollectedMobile').collection('categories');
         const productsCollection = client.db('CollectedMobile').collection('products');
         const usersCollection = client.db('CollectedMobile').collection('users');
-        const bookingCollection = client.db('CollectedMobile').collection('booking')
+        const bookingCollection = client.db('CollectedMobile').collection('booking');
+        const advertiseCollection = client.db('CollectedMobile').collection('advertise');
+
 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -49,7 +52,7 @@ async function run() {
 
         app.post('/booking', async (req, res) => {
             const product = req.body;
-            const result = await bookingCollection.insertOne(product)
+            const result = await bookingCollection.insertOne(product);
             res.send(result)
         })
 
@@ -68,11 +71,21 @@ async function run() {
         })
 
         app.delete('/product/:id', async (req, res) => {
-
             const id = req.params.id;
-            console.log(id);
             const query = { _id: ObjectId(id) }
             const result = await productsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.post('/advertise', async (req, res) => {
+            const advertiseItem = req.body;
+            const result = await advertiseCollection.insertOne(advertiseItem);
+            res.send(result);
+        })
+
+        app.get('/advertise', async (req, res) => {
+            const query = {};
+            const result = await advertiseCollection.find(query).toArray();
             res.send(result);
         })
 
