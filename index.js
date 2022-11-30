@@ -66,8 +66,14 @@ async function run() {
 
         app.post('/users', async (req, res) => {
             const user = req.body;
-            const result = await usersCollection.insertOne(user);
-            res.send(result);
+            const email = user.email;
+            const query = { email: email };
+            const isExist = await usersCollection.findOne(query);
+            if (!isExist) {
+                const result = await usersCollection.insertOne(user);
+                res.send(result);
+            }
+            res.send({ message: "Already Exist" });
         })
 
         app.post('/booking', async (req, res) => {
@@ -96,6 +102,16 @@ async function run() {
             res.send({ isAdmin: user?.role === 'Admin' });
         })
 
+        app.get('/users/verified/:email', async (req, res) => {
+            const email = req.params.email;
+
+            const query = { email }
+            console.log(query);
+            const user = await usersCollection.findOne(query);
+            res.send({ isVerified: user?.status === 'Verified' })
+            console.log(user?.status === 'Verified');
+        })
+
         app.get('/users/:role', async (req, res) => {
             const role = req.params.role;
             const query = { role: role };
@@ -116,6 +132,13 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await productsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.delete('/seller/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(query);
             res.send(result);
         })
 
